@@ -94,6 +94,26 @@
     margin: 0 0 1.5rem;
 }
 
+/* Komunikaty błędów formularza */
+.form-errors {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin: 0.5rem 0 1.25rem;
+    padding: 0.625rem 0.875rem;
+    background: rgba(180, 40, 40, 0.2);
+    border: 0.0625rem solid rgba(240, 80, 80, 0.45);
+    border-radius: 0.375rem;
+}
+
+.form-error-item {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: #ff9999;
+    line-height: 1.35;
+    text-align: center;
+}
+
 /* Formularz wewnątrz karty */
 .tome-form {
     display: flex;
@@ -383,6 +403,16 @@
     color: rgba(43, 24, 10, 0.72);
 }
 
+[data-theme="light"] .form-errors {
+    background: rgba(220, 50, 50, 0.12);
+    border-color: rgba(200, 40, 40, 0.35);
+}
+
+[data-theme="light"] .form-error-item {
+    color: #a81c1c;
+    font-weight: 600;
+}
+
 [data-theme="light"] .field-label {
     color: rgba(43, 24, 10, 0.85);
 }
@@ -470,6 +500,16 @@
 .tome-card.parchment-card .tome-description {
     color: var(--color-parchment-text);
     opacity: 0.8;
+}
+
+.tome-card.parchment-card .form-errors {
+    background: rgba(180, 35, 35, 0.12);
+    border-color: rgba(168, 28, 28, 0.4);
+}
+
+.tome-card.parchment-card .form-error-item {
+    color: #8f1616;
+    font-weight: 600;
 }
 
 .tome-card.parchment-card .field-label {

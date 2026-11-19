@@ -51,16 +51,50 @@
         <?= $navbarContent ?? '' ?>
 
         <div class="utility-group">
-            <a href="<?= ($isLoggedIn ?? false) ? '/campaigns' : '/login' ?>"
-               class="user-badge <?= ($isLoggedIn ?? false) ? 'logged-in' : 'logged-out' ?>"
-               title="<?= ($isLoggedIn ?? false) ? 'Przejdź do kampanii' : 'Zaloguj się' ?>"
-               aria-label="<?= ($isLoggedIn ?? false) ? 'Profil użytkownika' : 'Zaloguj się' ?>">
-                <div class="user-avatar-wrap">
-                    <i class="fa-solid fa-user user-avatar-icon" aria-hidden="true"></i>
-                    <span class="user-status-dot" aria-hidden="true"></span>
+            <?php if ($isLoggedIn ?? false): ?>
+                <div class="user-menu" id="user-menu">
+                    <button type="button"
+                            id="user-menu-toggle"
+                            class="user-badge logged-in"
+                            aria-haspopup="menu"
+                            aria-expanded="false"
+                            aria-controls="user-dropdown"
+                            title="Menu użytkownika"
+                            aria-label="Otwórz menu użytkownika">
+                        <span class="user-avatar-wrap">
+                            <i class="fa-solid fa-user user-avatar-icon" aria-hidden="true"></i>
+                            <span class="user-status-dot" aria-hidden="true"></span>
+                        </span>
+                        <span class="user-name"><?= htmlspecialchars((string) ($userName ?? 'Adventurer'), ENT_QUOTES, 'UTF-8') ?></span>
+                        <i class="fa-solid fa-chevron-down user-chevron" aria-hidden="true"></i>
+                    </button>
+
+                    <div id="user-dropdown" class="user-dropdown" role="menu" hidden>
+                        <a href="/campaigns" class="user-dropdown-item" role="menuitem">
+                            <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                            <span>My Campaigns</span>
+                        </a>
+                        <div class="user-dropdown-divider" role="separator"></div>
+                        <form method="post" action="/logout" class="user-dropdown-form">
+                            <button type="submit" class="user-dropdown-item user-dropdown-logout" role="menuitem">
+                                <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                                <span>Log Out</span>
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                <span class="user-name"><?= htmlspecialchars($userName ?? 'User not logged in', ENT_QUOTES, 'UTF-8') ?></span>
-            </a>
+            <?php else: ?>
+                <a href="/login"
+                   class="user-badge logged-out"
+                   title="Zaloguj się"
+                   aria-label="Zaloguj się">
+                    <span class="user-avatar-wrap">
+                        <i class="fa-solid fa-user user-avatar-icon" aria-hidden="true"></i>
+                        <span class="user-status-dot" aria-hidden="true"></span>
+                    </span>
+                    <span class="user-name"><?= htmlspecialchars((string) ($userName ?? 'User not logged in'), ENT_QUOTES, 'UTF-8') ?></span>
+                </a>
+            <?php endif; ?>
 
             <button type="button" id="sound-toggle" class="util-btn" title="Dźwięk atmosfery" aria-label="Ambience sound">
                 <i class="fa-solid fa-volume-high"></i>
@@ -108,6 +142,36 @@
                 if (icon) {
                     const isMuted = icon.classList.contains('fa-volume-xmark');
                     icon.className = isMuted ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+                }
+            });
+        }
+
+        const userMenu = document.getElementById('user-menu');
+        const userMenuToggle = document.getElementById('user-menu-toggle');
+        const userDropdown = document.getElementById('user-dropdown');
+
+        if (userMenu && userMenuToggle && userDropdown) {
+            const setMenuOpen = (isOpen) => {
+                userDropdown.hidden = !isOpen;
+                userMenuToggle.setAttribute('aria-expanded', String(isOpen));
+                userMenu.classList.toggle('open', isOpen);
+            };
+
+            userMenuToggle.addEventListener('click', (event) => {
+                event.stopPropagation();
+                setMenuOpen(userDropdown.hidden);
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!userMenu.contains(event.target)) {
+                    setMenuOpen(false);
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && !userDropdown.hidden) {
+                    setMenuOpen(false);
+                    userMenuToggle.focus();
                 }
             });
         }

@@ -15,12 +15,18 @@ $routing = new Routing();
 $routing->get('/', DefaultController::class, 'index');
 
 $routing->get('/login', SecurityController::class, 'login');
+$routing->post('/login', SecurityController::class, 'loginPost');
+$routing->post('/logout', SecurityController::class, 'logoutPost');
 $routing->get('/register', SecurityController::class, 'register');
+$routing->post('/register', SecurityController::class, 'registerPost');
 $routing->get('/forgot-password', SecurityController::class, 'forgotPassword');
+$routing->post('/forgot-password', SecurityController::class, 'forgotPasswordPost');
 $routing->get('/reset-password', SecurityController::class, 'resetPassword');
+$routing->post('/reset-password', SecurityController::class, 'resetPasswordPost');
 
 $routing->get('/campaigns', CampaignController::class, 'index');
 $routing->get('/campaigns/join', CampaignController::class, 'join');
+$routing->post('/campaigns/join', CampaignController::class, 'joinPost');
 $routing->get('/campaigns/{id}', CampaignController::class, 'show');
 
 $routing->get('/campaigns/{id}/characters', CharacterController::class, 'index');

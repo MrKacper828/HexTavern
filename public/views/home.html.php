@@ -28,7 +28,7 @@ $stylesheets = ['/css/login.css', '/css/home.css'];
                 Login to become the creator of stories.
             </p>
 
-            <form id="dm-form" class="tome-form" method="post" action="/login">
+            <div class="tome-form">
                 <a href="/login" class="tome-submit-btn">
                     <i class="fa-solid fa-lock" aria-hidden="true"></i>
                     <span>Login to your account</span>
@@ -37,7 +37,7 @@ $stylesheets = ['/css/login.css', '/css/home.css'];
                 <div class="card-footer-slot">
                     <p>New DM? <a href="/register" class="register-link">Register here</a></p>
                 </div>
-            </form>
+            </div>
         </article>
 
         <article class="tome-card parchment-card">
@@ -55,14 +55,14 @@ $stylesheets = ['/css/login.css', '/css/home.css'];
                 Join the game as one of the adventurers.
             </p>
 
-            <form id="join-form" class="tome-form" method="post" action="/join">
+            <div class="tome-form">
                 <a href="/campaigns/join" class="tome-submit-btn">
                     <i class="fa-solid fa-key" aria-hidden="true"></i>
                     <span>Join the table</span>
                 </a>
 
                 <div class="card-footer-slot" aria-hidden="true"></div>
-            </form>
+            </div>
         </article>
     </section>
 

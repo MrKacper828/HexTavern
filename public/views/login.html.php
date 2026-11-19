@@ -37,6 +37,14 @@ $navbarContent = ob_get_clean();
             Enter the world of imagination.
         </p>
 
+        <?php if (!empty($errors)): ?>
+            <div class="form-errors" role="alert">
+                <?php foreach ($errors as $error): ?>
+                    <p class="form-error-item"><?= htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8') ?></p>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
         <form id="login" class="tome-form" method="post" action="/login">
             <div class="field-block">
                 <label for="email" class="field-label">Email</label>
@@ -47,6 +55,7 @@ $navbarContent = ob_get_clean();
                         id="email"
                         name="email"
                         placeholder="your.email@gmail.com"
+                        value="<?= htmlspecialchars((string) ($old['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
                         required
                         autocomplete="email"
                     >
@@ -82,10 +91,10 @@ $navbarContent = ob_get_clean();
                 </label>
             </div>
 
-            <a href="/campaigns" class="tome-submit-btn">
+            <button type="submit" class="tome-submit-btn">
                 <i class="fa-solid fa-lock" aria-hidden="true"></i>
                 <span>Sign In</span>
-            </a>
+            </button>
 
             <div class="form-footer">
                 <p>New DM? <a href="/register" class="register-link">Register here</a></p>
