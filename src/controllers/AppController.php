@@ -16,9 +16,7 @@ abstract class AppController
             throw new \RuntimeException('View not found: ' . $template);
         }
 
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->ensureSession();
 
         if (isset($_GET['demo_login'])) {
             $_SESSION['user'] = ['name' => 'Brokk Stonehammer'];
@@ -42,5 +40,18 @@ abstract class AppController
         $content = (string) ob_get_clean();
 
         require $layoutPath;
+    }
+
+    protected function ensureSession(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+    }
+
+    protected function redirect(string $path): never
+    {
+        header('Location: ' . $path, true, 303);
+        exit;
     }
 }
