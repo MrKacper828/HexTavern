@@ -37,6 +37,14 @@ $navbarContent = ob_get_clean();
             Enter your new password below to regain access to your account.
         </p>
 
+        <?php if (!empty($errors)): ?>
+            <div class="form-errors" role="alert">
+                <?php foreach ($errors as $error): ?>
+                    <p class="form-error-item"><?= htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8') ?></p>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
         <form id="reset-password-form" class="tome-form" method="post" action="/reset-password">
             <div class="field-block">
                 <div class="field-label-row">
@@ -80,10 +88,10 @@ $navbarContent = ob_get_clean();
                 </div>
             </div>
 
-            <a href="/login" class="tome-submit-btn">
+            <button type="submit" class="tome-submit-btn">
                 <i class="fa-solid fa-key" aria-hidden="true"></i>
                 <span>Change Password</span>
-            </a>
+            </button>
         </form>
     </section>
 </main>
@@ -117,6 +125,7 @@ $navbarContent = ob_get_clean();
 
         if (confirmInput.value.length === 0) {
             indicator.classList.remove('active', 'mismatch', 'matched');
+            confirmInput.setCustomValidity('');
             return;
         }
 
@@ -126,10 +135,12 @@ $navbarContent = ob_get_clean();
             indicator.classList.remove('mismatch');
             indicator.classList.add('matched');
             matchText.textContent = 'Passwords match';
+            confirmInput.setCustomValidity('');
         } else {
             indicator.classList.remove('matched');
             indicator.classList.add('mismatch');
             matchText.textContent = 'Passwords do not match';
+            confirmInput.setCustomValidity('Passwords do not match');
         }
     };
 

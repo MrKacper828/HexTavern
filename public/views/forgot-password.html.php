@@ -37,6 +37,14 @@ $navbarContent = ob_get_clean();
             Enter your account email and we'll send you a link to reset your password.
         </p>
 
+        <?php if (!empty($errors)): ?>
+            <div class="form-errors" role="alert">
+                <?php foreach ($errors as $error): ?>
+                    <p class="form-error-item"><?= htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8') ?></p>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
         <form id="forgot-password-form" class="tome-form" method="post" action="/forgot-password">
             <div class="field-block">
                 <label for="email" class="field-label">Email</label>
@@ -47,15 +55,16 @@ $navbarContent = ob_get_clean();
                         id="email"
                         name="email"
                         placeholder="your.email@gmail.com"
+                        value="<?= htmlspecialchars((string) ($old['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
                         required
                     >
                 </div>
             </div>
 
-            <a href="/reset-password" class="tome-submit-btn">
+            <button type="submit" class="tome-submit-btn">
                 <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
                 <span>Send Reset Link</span>
-            </a>
+            </button>
 
             <div class="form-footer">
                 <p>Remember your password? <a href="/login" class="register-link">Sign In</a></p>

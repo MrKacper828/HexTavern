@@ -19,7 +19,9 @@ $routing->post('/login', SecurityController::class, 'loginPost');
 $routing->get('/register', SecurityController::class, 'register');
 $routing->post('/register', SecurityController::class, 'registerPost');
 $routing->get('/forgot-password', SecurityController::class, 'forgotPassword');
+$routing->post('/forgot-password', SecurityController::class, 'forgotPasswordPost');
 $routing->get('/reset-password', SecurityController::class, 'resetPassword');
+$routing->post('/reset-password', SecurityController::class, 'resetPasswordPost');
 
 $routing->get('/campaigns', CampaignController::class, 'index');
 $routing->get('/campaigns/join', CampaignController::class, 'join');

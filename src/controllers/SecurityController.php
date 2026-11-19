@@ -102,10 +102,56 @@ final class SecurityController extends AppController
         ]);
     }
 
+    public function forgotPasswordPost(): void
+    {
+        $email = trim((string) ($_POST['email'] ?? ''));
+        $errors = [];
+
+        if ($email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            $errors[] = 'Please enter a valid email address.';
+        }
+
+        if ($errors !== []) {
+            $this->render('forgot-password', [
+                'pageTitle' => 'Odzyskiwanie hasła',
+                'errors' => $errors,
+                'old' => ['email' => $email],
+            ]);
+            return;
+        }
+
+        $this->redirect('/reset-password');
+    }
+
     public function resetPassword(): void
     {
         $this->render('reset-password', [
             'pageTitle' => 'Ustawienie nowego hasła',
         ]);
+    }
+
+    public function resetPasswordPost(): void
+    {
+        $password = (string) ($_POST['password'] ?? '');
+        $passwordConfirm = (string) ($_POST['password_confirm'] ?? '');
+        $errors = [];
+
+        if (trim($password) === '') {
+            $errors[] = 'Please enter a new password.';
+        }
+
+        if ($password !== $passwordConfirm) {
+            $errors[] = 'Passwords do not match.';
+        }
+
+        if ($errors !== []) {
+            $this->render('reset-password', [
+                'pageTitle' => 'Ustawienie nowego hasła',
+                'errors' => $errors,
+            ]);
+            return;
+        }
+
+        $this->redirect('/login');
     }
 }
