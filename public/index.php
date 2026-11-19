@@ -17,6 +17,7 @@ $routing->get('/', DefaultController::class, 'index');
 $routing->get('/login', SecurityController::class, 'login');
 $routing->post('/login', SecurityController::class, 'loginPost');
 $routing->get('/register', SecurityController::class, 'register');
+$routing->post('/register', SecurityController::class, 'registerPost');
 $routing->get('/forgot-password', SecurityController::class, 'forgotPassword');
 $routing->get('/reset-password', SecurityController::class, 'resetPassword');
 

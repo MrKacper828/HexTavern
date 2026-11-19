@@ -34,6 +34,14 @@ $navbarContent = ob_get_clean();
 
         <h1 class="tome-title">Dungeon Master Account Registration</h1>
 
+        <?php if (!empty($errors)): ?>
+            <div class="form-errors" role="alert">
+                <?php foreach ($errors as $error): ?>
+                    <p class="form-error-item"><?= htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8') ?></p>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
         <form id="register-form" class="tome-form" method="post" action="/register">
             <div class="field-block">
                 <label for="username" class="field-label">Username</label>
@@ -44,6 +52,7 @@ $navbarContent = ob_get_clean();
                         id="username"
                         name="username"
                         placeholder="DungeonMaster42"
+                        value="<?= htmlspecialchars((string) ($old['username'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
                         required
                     >
                 </div>
@@ -58,6 +67,7 @@ $navbarContent = ob_get_clean();
                         id="email"
                         name="email"
                         placeholder="your.email@gmail.com"
+                        value="<?= htmlspecialchars((string) ($old['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
                         required
                     >
                 </div>
@@ -105,10 +115,10 @@ $navbarContent = ob_get_clean();
                 </div>
             </div>
 
-            <a href="/login" class="tome-submit-btn">
+            <button type="submit" class="tome-submit-btn">
                 <i class="fa-solid fa-lock" aria-hidden="true"></i>
                 <span>Create Account</span>
-            </a>
+            </button>
         </form>
     </section>
 </main>
@@ -144,6 +154,7 @@ $navbarContent = ob_get_clean();
         // Jeśli confirm password jest jeszcze puste, ukrywamy wskaźnik
         if (confirmInput.value.length === 0) {
             indicator.classList.remove('active', 'mismatch', 'matched');
+            confirmInput.setCustomValidity('');
             return;
         }
 
@@ -153,10 +164,12 @@ $navbarContent = ob_get_clean();
             indicator.classList.remove('mismatch');
             indicator.classList.add('matched');
             matchText.textContent = 'Passwords match';
+            confirmInput.setCustomValidity('');
         } else {
             indicator.classList.remove('matched');
             indicator.classList.add('mismatch');
             matchText.textContent = 'Passwords do not match';
+            confirmInput.setCustomValidity('Passwords do not match');
         }
     };
 
