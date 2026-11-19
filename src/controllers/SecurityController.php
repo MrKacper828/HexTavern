@@ -49,6 +49,31 @@ final class SecurityController extends AppController
         $this->redirect('/campaigns');
     }
 
+    public function logoutPost(): void
+    {
+        $this->ensureSession();
+
+        $_SESSION = [];
+
+        $sessionName = session_name();
+        if (ini_get('session.use_cookies') && is_string($sessionName)) {
+            $params = session_get_cookie_params();
+            setcookie(
+                $sessionName,
+                '',
+                time() - 42000,
+                (string) $params['path'],
+                (string) $params['domain'],
+                (bool) $params['secure'],
+                (bool) $params['httponly'],
+            );
+        }
+
+        session_destroy();
+
+        $this->redirect('/');
+    }
+
     public function register(): void
     {
         $this->render('register', [
