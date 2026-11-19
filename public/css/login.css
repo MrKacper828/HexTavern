@@ -502,6 +502,16 @@
     opacity: 0.8;
 }
 
+.tome-card.parchment-card .form-errors {
+    background: rgba(180, 35, 35, 0.12);
+    border-color: rgba(168, 28, 28, 0.4);
+}
+
+.tome-card.parchment-card .form-error-item {
+    color: #8f1616;
+    font-weight: 600;
+}
+
 .tome-card.parchment-card .field-label {
     color: var(--color-parchment-text);
     font-weight: 700;

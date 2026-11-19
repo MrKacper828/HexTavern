@@ -26,6 +26,7 @@ $routing->post('/reset-password', SecurityController::class, 'resetPasswordPost'
 
 $routing->get('/campaigns', CampaignController::class, 'index');
 $routing->get('/campaigns/join', CampaignController::class, 'join');
+$routing->post('/campaigns/join', CampaignController::class, 'joinPost');
 $routing->get('/campaigns/{id}', CampaignController::class, 'show');
 
 $routing->get('/campaigns/{id}/characters', CharacterController::class, 'index');

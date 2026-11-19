@@ -37,7 +37,15 @@ $navbarContent = ob_get_clean();
             Enter given room code and state your name to join the campaign.
         </p>
 
-        <form id="join-form" class="tome-form" method="post" action="/join">
+        <?php if (!empty($errors)): ?>
+            <div class="form-errors" role="alert">
+                <?php foreach ($errors as $error): ?>
+                    <p class="form-error-item"><?= htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8') ?></p>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
+        <form id="join-form" class="tome-form" method="post" action="/campaigns/join">
             <div class="field-block">
                 <label for="room-code" class="field-label">Room Code</label>
                 <div class="field-input-wrap">
@@ -47,6 +55,7 @@ $navbarContent = ob_get_clean();
                         id="room-code"
                         name="room_code"
                         placeholder="TAVERN-DRAGON-8265"
+                        value="<?= htmlspecialchars((string) ($old['room_code'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
                         required
                     >
                 </div>
@@ -61,15 +70,16 @@ $navbarContent = ob_get_clean();
                         id="username"
                         name="username"
                         placeholder="HappyPlayer21"
+                        value="<?= htmlspecialchars((string) ($old['username'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
                         required
                     >
                 </div>
             </div>
 
-            <a href="/campaigns/1" class="tome-submit-btn">
+            <button type="submit" class="tome-submit-btn">
                 <i class="fa-solid fa-key" aria-hidden="true"></i>
                 <span>Join The Session</span>
-            </a>
+            </button>
 
             <div class="form-footer">
                 <p>Dungeon Master? <a href="/login" class="register-link">Enter via the DM Ledger &rarr;</a></p>
