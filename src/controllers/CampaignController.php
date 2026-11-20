@@ -8,6 +8,8 @@ final class CampaignController extends AppController
 {
     public function index(): void
     {
+        $this->forbidGuest();
+
         $this->render('campaigns', [
             'pageTitle' => 'Campaigns',
         ]);
@@ -15,6 +17,10 @@ final class CampaignController extends AppController
 
     public function show(int $id): void
     {
+        if ($this->getUserRole() === 'guest' && $id !== $this->getGuestCampaignId()) {
+            $this->redirect('/campaigns/' . $this->getGuestCampaignId());
+        }
+
         $this->render('game_room', [
             'pageTitle' => 'Pokój rozgrywki',
             'campaignId' => $id,
@@ -23,6 +29,8 @@ final class CampaignController extends AppController
 
     public function join(): void
     {
+        $this->redirectIfAuthenticated();
+
         $this->render('join', [
             'pageTitle' => 'Dołączanie do rozgrywki',
         ]);
@@ -30,6 +38,8 @@ final class CampaignController extends AppController
 
     public function joinPost(): void
     {
+        $this->redirectIfAuthenticated();
+
         $roomCode = trim((string) ($_POST['room_code'] ?? ''));
         $username = trim((string) ($_POST['username'] ?? ''));
         $errors = [];

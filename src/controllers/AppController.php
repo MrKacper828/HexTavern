@@ -16,13 +16,11 @@ abstract class AppController
             throw new \RuntimeException('View not found: ' . $template);
         }
 
-        $this->ensureSession();
-
+        $userRole = $this->getUserRole();
         $currentUser = $_SESSION['user'] ?? null;
-        $isLoggedIn = $currentUser !== null;
-        $userRole = $isLoggedIn ? (string) ($currentUser['role'] ?? 'dm') : null;
+        $isLoggedIn = $userRole !== null;
         $userName = $isLoggedIn ? (string) ($currentUser['name'] ?? 'Adventurer') : 'User not logged in';
-        $guestCampaignId = ($userRole === 'guest') ? (int) ($currentUser['campaign_id'] ?? 1) : null;
+        $guestCampaignId = ($userRole === 'guest') ? $this->getGuestCampaignId() : null;
 
         $globalVariables = [
             'isLoggedIn' => $isLoggedIn,
@@ -44,6 +42,45 @@ abstract class AppController
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
+        }
+    }
+
+    protected function getUserRole(): ?string
+    {
+        $this->ensureSession();
+
+        $currentUser = $_SESSION['user'] ?? null;
+        if (!is_array($currentUser)) {
+            return null;
+        }
+
+        return (string) ($currentUser['role'] ?? 'dm');
+    }
+
+    protected function getGuestCampaignId(): int
+    {
+        $this->ensureSession();
+
+        return (int) ($_SESSION['user']['campaign_id'] ?? 1);
+    }
+
+    protected function redirectIfAuthenticated(): void
+    {
+        $role = $this->getUserRole();
+
+        if ($role === 'dm') {
+            $this->redirect('/campaigns');
+        }
+
+        if ($role === 'guest') {
+            $this->redirect('/campaigns/' . $this->getGuestCampaignId());
+        }
+    }
+
+    protected function forbidGuest(): void
+    {
+        if ($this->getUserRole() === 'guest') {
+            $this->redirect('/campaigns/' . $this->getGuestCampaignId());
         }
     }
 

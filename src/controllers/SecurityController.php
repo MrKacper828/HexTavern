@@ -9,6 +9,8 @@ final class SecurityController extends AppController
 {
     public function login(): void
     {
+        $this->redirectIfAuthenticated();
+
         $this->render('login', [
             'pageTitle' => 'Logowanie do konta',
         ]);
@@ -16,6 +18,8 @@ final class SecurityController extends AppController
 
     public function loginPost(): void
     {
+        $this->redirectIfAuthenticated();
+
         $email = trim((string) ($_POST['email'] ?? ''));
         $password = (string) ($_POST['password'] ?? '');
         $errors = [];
@@ -77,6 +81,8 @@ final class SecurityController extends AppController
 
     public function register(): void
     {
+        $this->redirectIfAuthenticated();
+
         $this->render('register', [
             'pageTitle' => 'Rejestracja konta',
         ]);
@@ -84,6 +90,8 @@ final class SecurityController extends AppController
 
     public function registerPost(): void
     {
+        $this->redirectIfAuthenticated();
+
         $username = trim((string) ($_POST['username'] ?? ''));
         $email = trim((string) ($_POST['email'] ?? ''));
         $password = (string) ($_POST['password'] ?? '');
@@ -123,6 +131,8 @@ final class SecurityController extends AppController
 
     public function forgotPassword(): void
     {
+        $this->redirectIfAuthenticated();
+
         $this->render('forgot-password', [
             'pageTitle' => 'Odzyskiwanie hasła',
         ]);
@@ -130,6 +140,8 @@ final class SecurityController extends AppController
 
     public function forgotPasswordPost(): void
     {
+        $this->redirectIfAuthenticated();
+
         $email = trim((string) ($_POST['email'] ?? ''));
         $errors = [];
 
@@ -151,6 +163,8 @@ final class SecurityController extends AppController
 
     public function resetPassword(): void
     {
+        $this->redirectIfAuthenticated();
+
         $this->render('reset-password', [
             'pageTitle' => 'Ustawienie nowego hasła',
         ]);
@@ -158,6 +172,8 @@ final class SecurityController extends AppController
 
     public function resetPasswordPost(): void
     {
+        $this->redirectIfAuthenticated();
+
         $password = (string) ($_POST['password'] ?? '');
         $passwordConfirm = (string) ($_POST['password_confirm'] ?? '');
         $errors = [];
