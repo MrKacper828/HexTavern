@@ -8,12 +8,16 @@ HexTavern — aplikacja webowa w czystym PHP 8.3 do obsługi sesji gier TTRPG on
 
 Aktualnie aplikacja obsługuje:
 
-- stronę główną pod `/` (`DefaultController::index`),
-- logowanie Mistrza Gry pod `/login` (`SecurityController::login`),
-- listę kampanii pod `/campaigns` (`CampaignController::index`),
-- dołączanie do kampanii pod `/campaigns/join` (`CampaignController::join`),
-- pokój rozgrywki danej kampanii pod `/campaigns/{id}` (`CampaignController::show`),
-- podgląd kart postaci kampanii pod `/campaigns/{id}/characters` (`CharacterController::index`),
+- stronę główną pod `GET /` (`DefaultController::index`),
+- logowanie Mistrza Gry pod `GET` / `POST /login` (`SecurityController::login`, `loginPost`),
+- wylogowanie DM-a lub opuszczenie sesji gościa pod `POST /logout` (`SecurityController::logoutPost`),
+- rejestrację konta DM-a pod `GET` / `POST /register` (`SecurityController::register`, `registerPost`),
+- odzyskiwanie hasła pod `GET` / `POST /forgot-password` (`SecurityController::forgotPassword`, `forgotPasswordPost`),
+- ustawienie nowego hasła pod `GET` / `POST /reset-password` (`SecurityController::resetPassword`, `resetPasswordPost`),
+- listę kampanii DM-a pod `GET /campaigns` (`CampaignController::index`),
+- dołączanie gracza do kampanii przez kod pod `GET` / `POST /campaigns/join` (`CampaignController::join`, `joinPost`),
+- pokój rozgrywki danej kampanii pod `GET /campaigns/{id}` (`CampaignController::show`),
+- podgląd kart postaci kampanii (dla DM-a) pod `GET /campaigns/{id}/characters` (`CharacterController::index`),
 - odpowiedź 404 dla nieznanych tras (`DefaultController::notFound`).
 
 ## Stack technologiczny
@@ -26,40 +30,46 @@ Aktualnie aplikacja obsługuje:
 - Mailpit (serwer testowy SMTP i interfejs webowy poczty)
 - pgAdmin (panel zarządzania bazą danych)
 - Docker oraz Docker Compose
-- Czysty HTML oraz CSS bez zewnętrznych frameworków frontendowych
+- Czysty HTML, CSS oraz Vanilla JS bez zewnętrznych frameworków frontendowych (ikony Font Awesome z CDN)
 
 ## Struktura katalogów
 
 ```text
 .
 ├── docker/
-│   ├── db/                    # obraz i inicjalizacja PostgreSQL (initdb.d)
-│   ├── nginx/                 # obraz i konfiguracja Nginx
-│   └── php/                   # obraz PHP-FPM i rozszerzenia PHP
-├── public/                    # jedyny publicznie dostępny katalog (document root)
+│   ├── db/                         # obraz i inicjalizacja PostgreSQL (initdb.d)
+│   ├── nginx/                      # obraz i konfiguracja Nginx
+│   └── php/                        # obraz PHP-FPM i rozszerzenia PHP
+├── public/                         # jedyny publicznie dostępny katalog (document root)
 │   ├── css/
-│   │   ├── style.css          # globalne style, zmienne motywów, reset
-│   │   └── login.css          # dedykowane style formularza logowania
-│   ├── index.php              # Front Controller i rejestracja tras
-│   └── views/                 # szablony widoków renderowane przez kontrolery
-│       ├── layout.html.php    # bazowy szablon układu strony ($content, $stylesheets)
-│       ├── home.html.php      # strona główna
-│       ├── login.html.php     # widok logowania
-│       ├── campaigns.html.php # lista kampanii
-│       ├── game_room.html.php # stół / pokój rozgrywki
-│       ├── characters.html.php# karty postaci
-│       ├── join.html.php      # dołączanie do lobby przez kod
-│       └── not-found.html.php # strona błędu 404
+│   │   ├── style.css               # globalne style, zmienne motywów (dark/light), navbar, dropdown
+│   │   ├── home.css                # style strony głównej
+│   │   └── login.css               # dedykowane style widoków auth/join i kart
+│   ├── js/
+│   │   └── theme.js                # przełącznik motywu jasny/ciemny (localStorage)
+│   ├── index.php                   # Front Controller i rejestracja tras
+│   └── views/                      # szablony widoków renderowane przez kontrolery
+│       ├── layout.html.php         # bazowy układ ($content, $stylesheets, $navbarContent, navbar i menu użytkownika)
+│       ├── home.html.php           # strona główna
+│       ├── login.html.php          # widok logowania DM-a
+│       ├── register.html.php       # widok rejestracji konta DM-a
+│       ├── forgot-password.html.php# widok odzyskiwania hasła
+│       ├── reset-password.html.php # widok ustawienia nowego hasła
+│       ├── campaigns.html.php      # lista kampanii
+│       ├── game_room.html.php      # stół / pokój rozgrywki
+│       ├── characters.html.php     # karty postaci
+│       ├── join.html.php           # dołączanie gracza do lobby przez kod
+│       └── not-found.html.php      # strona błędu 404
 ├── src/
-│   ├── controllers/           # kontrolery aplikacji (namespace App\Controller)
-│   │   ├── AppController.php  # abstrakcyjny kontroler bazowy (metoda render())
+│   ├── controllers/                # kontrolery aplikacji (namespace App\Controller)
+│   │   ├── AppController.php       # kontroler bazowy (render(), redirect(), sesja i guardy ról)
 │   │   ├── DefaultController.php
 │   │   ├── SecurityController.php
 │   │   ├── CampaignController.php
 │   │   └── CharacterController.php
-│   └── Routing.php            # autorski router aplikacji
-├── composer.json              # konfiguracja autoloadingu PSR-4
-└── docker-compose.yaml        # definicje usług kontenerowych
+│   └── Routing.php                 # autorski router aplikacji
+├── composer.json                   # konfiguracja autoloadingu PSR-4
+└── docker-compose.yaml             # definicje usług kontenerowych
 ```
 
 Nie umieszczaj logiki aplikacji ani danych wrażliwych w `public/`. Ten katalog jest document rootem Nginx i służy tylko jako punkt wejścia oraz miejsce na widoki i zasoby publiczne.
@@ -105,9 +115,24 @@ Kontrolery znajdują się w `src/controllers/`, używają przestrzeni nazw `App\
 - odebranie i walidacja danych wejściowych,
 - wywołanie modelu, repozytorium lub serwisu,
 - przygotowanie danych dla widoku,
-- wybranie szablonu i przekazanie zmiennych przez `$this->render(string $template, array $variables = [])`.
+- wybranie szablonu przez `$this->render(string $template, array $variables = [])` albo przekierowanie po sukcesie żądania `POST` metodą `$this->redirect(string $path): never` (kod `303 See Other`, wzorzec PRG).
 
-Kontroler powinien być cienki. Nie umieszczaj w nim rozbudowanych zapytań SQL, kodu HTML ani reguł CSS.
+Trasy formularzy są rozdzielane na akcję `GET` (wyświetlenie) oraz `POST` z sufiksem `*Post()` (walidacja i przekierowanie). Na obecnym etapie (przed podpięciem bazy PostgreSQL i repozytoriów) walidacja formularzy logowania, rejestracji, resetu hasła i dołączania ma charakter tymczasowy. Kontroler powinien być cienki — nie umieszczaj w nim rozbudowanych zapytań SQL, kodu HTML ani reguł CSS.
+
+### Sesje, role i ochrona tras
+
+`AppController` zarządza sesją PHP (`ensureSession()`) i w `$_SESSION['user']` rozróżnia dwie role aktywnej sesji:
+
+- `'dm'` — zalogowany Mistrz Gry (`name`, `email`, `role`),
+- `'guest'` — gracz dołączony kodem pokoju (`name`, `role`, `room_code`, `campaign_id`).
+
+Metoda `AppController::render()` automatycznie przekazuje do wszystkich widoków zmienne globalne `$isLoggedIn`, `$userRole`, `$userName` oraz `$guestCampaignId` (wykorzystywane m.in. w pasku górnym i rozwijanym menu w `layout.html.php`).
+
+Ochrona tras opiera się na metodach pomocniczych w `AppController`:
+
+- `redirectIfAuthenticated()` — blokuje dostęp do tras auth (`/login`, `/register`, `/forgot-password`, `/reset-password` w `GET` i `POST`) oraz `/campaigns/join` dla użytkowników z aktywną sesją (`dm` → `/campaigns`, `guest` → `/campaigns/{campaign_id}`),
+- `forbidGuest()` — blokuje rolę `'guest'` na panelach DM-a (`/campaigns` oraz `/campaigns/{id}/characters`),
+- w `CampaignController::show()` gość może wejść wyłącznie do pokoju o ID zgodnym z `getGuestCampaignId()`.
 
 ### Model
 
@@ -124,7 +149,7 @@ Po dodaniu lub przeniesieniu klas odśwież autoloader poleceniem `composer dump
 
 ### View
 
-Widoki znajdują się w `public/views/` i mają rozszerzenie `*.html.php`. Metoda `AppController::render()` buforuje wskazany szablon widoku do zmiennej `$content`, rozpakowuje przekazane zmienne przez `extract($variables, EXTR_SKIP)` i dołącza bazowy `public/views/layout.html.php`. W widokach można przekazać również tablicę `$stylesheets` w celu dołączenia dedykowanych arkuszy stylów.
+Widoki znajdują się w `public/views/` i mają rozszerzenie `*.html.php`. Metoda `AppController::render()` buforuje wskazany szablon widoku do zmiennej `$content`, rozpakowuje przekazane zmienne przez `extract($variables, EXTR_SKIP)` i dołącza bazowy `public/views/layout.html.php`. W widokach można opcjonalnie przekazać tablicę `$stylesheets` (dodatkowe arkusze CSS) oraz `$navbarContent` (zakładki nawigacji w środku górnego paska). Błędy walidacji formularzy renderowane są wspólnymi klasami `.form-errors` / `.form-error-item`.
 
 Widoki odpowiadają wyłącznie za prezentację. Dozwolone są w nich proste instrukcje warunkowe i pętle, ale nie logika biznesowa, operacje na bazie danych ani obsługa routingu.
 
@@ -165,11 +190,20 @@ Typowy porządek prac:
 
 ## Uruchamianie projektu
 
+Pierwsze uruchomienie lub po zmianach w `Dockerfile` / `docker/nginx/nginx.conf`:
+
 ```bash
 docker compose up --build -d
 ```
 
-Aplikacja jest domyślnie dostępna pod `http://localhost:8080`. Port można zmienić przez zmienną `APP_PORT` w `.env`.
+Codzienne uruchamianie i zatrzymywanie bez przebudowy obrazów:
+
+```bash
+docker compose up -d
+docker compose stop
+```
+
+Aplikacja jest domyślnie dostępna pod `http://localhost:8080`. Port można zmienić lokalnie przez zmienną `APP_PORT` w ignorowanym przez Git pliku `.env`.
 
 Usługi pomocnicze:
 - Mailpit: `http://localhost:8025` (`MAILPIT_PORT`)

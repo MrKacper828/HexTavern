@@ -6,35 +6,60 @@ Strona oferuje darmowe tworzenie lobby do sesji online w gry TTRPG (Tabletop Rol
 
 | Obszar | Co robi |
 |---|---|
-| Strona startowa | Możliwość wyboru czy jesteś graczem czy dm-em. |
-| Strona dołączania do lobby gracza | Gracze dołączają do lobby za pomocą kodu bez konta. |
-| Strona logowania dm-a | To dm musi tworzyć konto i to on zapisuje stan gry. |
-| Strona z listą zapisanych kampanii dm-a | Pozwala to dm-om na prowadzenie większej ilości kampanii. |
-| Strona główna z "stołem" do rozgrywki | Tutaj gracze widzą siebie nawzajem, mogą rzucać kośćmi, bądź podglądać karty postaci. |
-| Strona z kartami postaci dla dm-a | Dm ma pełny wgląd w karty postaci graczy z podziałem na kampanie, jak i swoje customowe karty. |
+| Strona startowa | Wybór ścieżki gracza lub Dungeon Mastera (DM). |
+| Dołączanie do lobby | Gracze dołączają kodem pokoju i nickiem bez zakładania konta. |
+| Konto DM-a | Logowanie, rejestracja i odzyskiwanie hasła Mistrza Gry. |
+| Sesja i interfejs | Rozróżnienie ról (DM / Gość) w menu użytkownika oraz przełącznik motywu (ciemny / jasny). |
+| Lista kampanii DM-a | Zarządzanie prowadzonymi kampaniami. |
+| Stół do rozgrywki | Widok sesji, rzuty kośćmi i podgląd kart postaci. |
+| Karty postaci (DM) | Pełny wgląd DM-a w karty postaci graczy oraz karty customowe. |
 
 ## Tech stack
 
 | Warstwa | Technologie |
 |---|---|
-| Backend | PHP 8.3 |
+| Backend | PHP 8.3 (własne MVC, Composer PSR-4) |
+| Frontend | HTML, CSS, Vanilla JS |
 | Serwer HTTP | Nginx |
-| Konteneryzacja | Docker Compose |
+| Baza danych | PostgreSQL 16 |
+| Konteneryzacja i narzędzia | Docker Compose (Mailpit, pgAdmin) |
 
 ## Szybki start
 
+1. Sklonuj repozytorium:
+
 ```bash
-git clone https://github.com/MrKacper828/wdpai-project.git
-cd REPOZYTORIUM
+git clone https://github.com/MrKacper828/HexTavern.git
+cd HexTavern
+```
+
+2. Przed uruchomieniem utwórz lokalny plik `.env` ze zmiennymi środowiskowymi wymaganymi przez `docker-compose.yaml` (plik `.env` jest ignorowany przez Git i nie należy go nigdzie udostępniać).
+
+3. Pierwsze uruchomienie (budowanie kontenerów):
+
+```bash
 docker compose up --build -d
 docker compose exec php composer dump-autoload
 ```
 
-Aplikacja: http://localhost:8080
+Codzienne uruchamianie i zatrzymywanie bez ponownego budowania obrazów:
+
+```bash
+docker compose up -d
+docker compose stop
+```
+
+Adresy lokalne (domyślne porty):
+- Aplikacja: http://localhost:8080
+- Mailpit: http://localhost:8025
+- pgAdmin: http://localhost:5050
 
 ## Struktura projektu
 
-Krótki opis najważniejszych katalogów.
+- `public/` — punkt wejścia (`index.php`), widoki (`views/`), style (`css/`) oraz skrypty (`js/`).
+- `src/` — router (`Routing.php`) i kontrolery aplikacji (`controllers/`).
+- `docker/` — konfiguracja obrazów Nginx, PHP-FPM i PostgreSQL.
+- `docker-compose.yaml`, `composer.json` — definicje usług kontenerowych oraz autoloading PSR-4.
 
 ## Zasady developmentu
 
