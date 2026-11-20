@@ -44,6 +44,7 @@ final class SecurityController extends AppController
         $_SESSION['user'] = [
             'name' => ($displayName !== false && $displayName !== '') ? $displayName : $email,
             'email' => $email,
+            'role' => 'dm',
         ];
 
         $this->redirect('/campaigns');

@@ -52,10 +52,11 @@
 
         <div class="utility-group">
             <?php if ($isLoggedIn ?? false): ?>
+                <?php $isGuest = ($userRole ?? null) === 'guest'; ?>
                 <div class="user-menu" id="user-menu">
                     <button type="button"
                             id="user-menu-toggle"
-                            class="user-badge logged-in"
+                            class="user-badge <?= $isGuest ? 'guest' : 'logged-in' ?>"
                             aria-haspopup="menu"
                             aria-expanded="false"
                             aria-controls="user-dropdown"
@@ -65,22 +66,36 @@
                             <i class="fa-solid fa-user user-avatar-icon" aria-hidden="true"></i>
                             <span class="user-status-dot" aria-hidden="true"></span>
                         </span>
-                        <span class="user-name"><?= htmlspecialchars((string) ($userName ?? 'Adventurer'), ENT_QUOTES, 'UTF-8') ?></span>
+                        <span class="user-name"><?= htmlspecialchars((string) ($userName ?? 'Adventurer'), ENT_QUOTES, 'UTF-8') ?><?= $isGuest ? ' (Guest)' : '' ?></span>
                         <i class="fa-solid fa-chevron-down user-chevron" aria-hidden="true"></i>
                     </button>
 
                     <div id="user-dropdown" class="user-dropdown" role="menu" hidden>
-                        <a href="/campaigns" class="user-dropdown-item" role="menuitem">
-                            <i class="fa-solid fa-book-open" aria-hidden="true"></i>
-                            <span>My Campaigns</span>
-                        </a>
-                        <div class="user-dropdown-divider" role="separator"></div>
-                        <form method="post" action="/logout" class="user-dropdown-form">
-                            <button type="submit" class="user-dropdown-item user-dropdown-logout" role="menuitem">
-                                <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
-                                <span>Log Out</span>
-                            </button>
-                        </form>
+                        <?php if ($isGuest): ?>
+                            <a href="/campaigns/<?= htmlspecialchars((string) ($guestCampaignId ?? 1), ENT_QUOTES, 'UTF-8') ?>" class="user-dropdown-item" role="menuitem">
+                                <i class="fa-solid fa-dice-d20" aria-hidden="true"></i>
+                                <span>Return to Table</span>
+                            </a>
+                            <div class="user-dropdown-divider" role="separator"></div>
+                            <form method="post" action="/logout" class="user-dropdown-form">
+                                <button type="submit" class="user-dropdown-item user-dropdown-logout" role="menuitem">
+                                    <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                                    <span>Leave Session</span>
+                                </button>
+                            </form>
+                        <?php else: ?>
+                            <a href="/campaigns" class="user-dropdown-item" role="menuitem">
+                                <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                                <span>My Campaigns</span>
+                            </a>
+                            <div class="user-dropdown-divider" role="separator"></div>
+                            <form method="post" action="/logout" class="user-dropdown-form">
+                                <button type="submit" class="user-dropdown-item user-dropdown-logout" role="menuitem">
+                                    <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                                    <span>Log Out</span>
+                                </button>
+                            </form>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php else: ?>

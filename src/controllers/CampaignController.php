@@ -54,6 +54,18 @@ final class CampaignController extends AppController
             return;
         }
 
-        $this->redirect('/campaigns/1');
+        $campaignId = 1;
+
+        $this->ensureSession();
+        session_regenerate_id(true);
+
+        $_SESSION['user'] = [
+            'name' => $username,
+            'role' => 'guest',
+            'room_code' => $roomCode,
+            'campaign_id' => $campaignId,
+        ];
+
+        $this->redirect('/campaigns/' . $campaignId);
     }
 }

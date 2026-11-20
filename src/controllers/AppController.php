@@ -20,11 +20,15 @@ abstract class AppController
 
         $currentUser = $_SESSION['user'] ?? null;
         $isLoggedIn = $currentUser !== null;
-        $userName = $isLoggedIn ? ($currentUser['name'] ?? 'Adventurer') : 'User not logged in';
+        $userRole = $isLoggedIn ? (string) ($currentUser['role'] ?? 'dm') : null;
+        $userName = $isLoggedIn ? (string) ($currentUser['name'] ?? 'Adventurer') : 'User not logged in';
+        $guestCampaignId = ($userRole === 'guest') ? (int) ($currentUser['campaign_id'] ?? 1) : null;
 
         $globalVariables = [
             'isLoggedIn' => $isLoggedIn,
+            'userRole' => $userRole,
             'userName' => $userName,
+            'guestCampaignId' => $guestCampaignId,
         ];
 
         extract(array_merge($globalVariables, $variables), EXTR_SKIP);
