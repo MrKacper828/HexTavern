@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Repository\CampaignRepository;
+
 final class CampaignController extends AppController
 {
     public function index(): void
     {
         $this->forbidGuest();
 
+        $campaignRepository = new CampaignRepository();
+
         $this->render('campaigns', [
             'pageTitle' => 'Campaigns',
+            'campaigns' => $campaignRepository->findAllWithDm(),
         ]);
     }
 
@@ -21,9 +26,21 @@ final class CampaignController extends AppController
             $this->redirect('/campaigns/' . $this->getGuestCampaignId());
         }
 
+        $campaignRepository = new CampaignRepository();
+        $campaign = $campaignRepository->findByIdWithDm($id);
+
+        if ($campaign === null) {
+            http_response_code(404);
+            $this->render('not-found', [
+                'pageTitle' => 'Nie znaleziono kampanii',
+            ]);
+            return;
+        }
+
         $this->render('game_room', [
             'pageTitle' => 'Pokój rozgrywki',
             'campaignId' => $id,
+            'campaign' => $campaign,
         ]);
     }
 
