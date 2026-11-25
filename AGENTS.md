@@ -37,7 +37,12 @@ Aktualnie aplikacja obsługuje:
 ```text
 .
 ├── docker/
-│   ├── db/                         # obraz i inicjalizacja PostgreSQL (initdb.d)
+│   ├── db/                         # obraz i inicjalizacja PostgreSQL
+│   │   ├── Dockerfile
+│   │   └── init/                   # skrypty startowe wykonywane przy pustym wolumenie pg-data
+│   │       ├── 001_create_users.sql
+│   │       ├── 002_create_campaigns.sql
+│   │       └── 003_seed_demo.sql
 │   ├── nginx/                      # obraz i konfiguracja Nginx
 │   └── php/                        # obraz PHP-FPM i rozszerzenia PHP
 ├── public/                         # jedyny publicznie dostępny katalog (document root)
@@ -67,7 +72,11 @@ Aktualnie aplikacja obsługuje:
 │   │   ├── SecurityController.php
 │   │   ├── CampaignController.php
 │   │   └── CharacterController.php
+│   ├── Repository/                 # repozytoria dostępu do bazy (namespace App\Repository)
+│   │   └── Repository.php          # abstrakcyjna klasa bazowa z wstrzykiwanym PDO
+│   ├── Database.php                # singleton połączenia PDO z PostgreSQL (App\Database)
 │   └── Routing.php                 # autorski router aplikacji
+├── .env.example                    # bezpieczny szablon zmiennych środowiskowych
 ├── composer.json                   # konfiguracja autoloadingu PSR-4
 └── docker-compose.yaml             # definicje usług kontenerowych
 ```
@@ -136,7 +145,7 @@ Ochrona tras opiera się na metodach pomocniczych w `AppController`:
 
 ### Model
 
-Gdy funkcja wymaga trwałego przechowywania danych (PostgreSQL), wydziel dedykowane klasy modeli lub repozytoriów w `src/` zamiast dodawać bezpośrednie zapytania SQL do kontrolera.
+Gdy funkcja wymaga trwałego przechowywania danych (PostgreSQL), wydziel dedykowane klasy modeli lub repozytoriów w `src/` zamiast dodawać bezpośrednie zapytania SQL do kontrolera. Współdzielone połączenie `PDO` zapewnia singleton `src/Database.php` (`App\Database`), a nowe repozytoria powinny dziedziczyć po `src/Repository/Repository.php` (`App\Repository\Repository`).
 
 Dla nowych klas zgodnych z mapowaniem `App\` w Composerze preferuj katalogi i nazwy klas o zgodnej wielkości liter, np.:
 
