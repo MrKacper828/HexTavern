@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Repository\CampaignRepository;
+use DateTimeImmutable;
+use Throwable;
 
 final class CampaignController extends AppController
 {
@@ -13,10 +15,20 @@ final class CampaignController extends AppController
         $this->forbidGuest();
 
         $campaignRepository = new CampaignRepository();
+        $rawCampaigns = $campaignRepository->findAllWithDm();
+        $campaigns = array_map(
+            fn (array $campaign): array => array_merge($campaign, [
+                'last_played_label' => $this->formatLastPlayed(
+                    isset($campaign['last_played_at']) ? (string) $campaign['last_played_at'] : null,
+                ),
+            ]),
+            $rawCampaigns,
+        );
 
         $this->render('campaigns', [
-            'pageTitle' => 'Campaigns',
-            'campaigns' => $campaignRepository->findAllWithDm(),
+            'pageTitle' => 'Campaign Manager',
+            'campaigns' => $campaigns,
+            'activeCampaignId' => $this->resolveActiveCampaignId($campaigns),
         ]);
     }
 
@@ -36,6 +48,11 @@ final class CampaignController extends AppController
             ]);
             return;
         }
+
+        $this->rememberLastDmCampaignId($id);
+        $campaign['last_played_label'] = $this->formatLastPlayed(
+            isset($campaign['last_played_at']) ? (string) $campaign['last_played_at'] : null,
+        );
 
         $this->render('game_room', [
             'pageTitle' => 'Pokój rozgrywki',
@@ -94,5 +111,39 @@ final class CampaignController extends AppController
         ];
 
         $this->redirect('/campaigns/' . $campaignId);
+    }
+
+    private function resolveActiveCampaignId(array $campaigns): ?int
+    {
+        if ($campaigns === []) {
+            return null;
+        }
+
+        $campaignIds = array_map(
+            static fn (array $campaign): int => (int) $campaign['id'],
+            $campaigns,
+        );
+
+        $lastCampaignId = $this->getLastDmCampaignId();
+        if ($lastCampaignId !== null && in_array($lastCampaignId, $campaignIds, true)) {
+            return $lastCampaignId;
+        }
+
+        return $campaignIds[0];
+    }
+
+    private function formatLastPlayed(?string $timestamp): string
+    {
+        if ($timestamp === null || trim($timestamp) === '') {
+            return 'Not played yet';
+        }
+
+        try {
+            $date = new DateTimeImmutable($timestamp);
+
+            return $date->format('d M Y, H:i');
+        } catch (Throwable) {
+            return 'Not played yet';
+        }
     }
 }

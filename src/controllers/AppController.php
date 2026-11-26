@@ -64,6 +64,25 @@ abstract class AppController
         return (int) ($_SESSION['user']['campaign_id'] ?? 1);
     }
 
+    protected function rememberLastDmCampaignId(int $campaignId): void
+    {
+        if ($this->getUserRole() === 'guest') {
+            return;
+        }
+
+        $this->ensureSession();
+        $_SESSION['last_dm_campaign_id'] = $campaignId;
+    }
+
+    protected function getLastDmCampaignId(): ?int
+    {
+        $this->ensureSession();
+
+        $lastCampaignId = $_SESSION['last_dm_campaign_id'] ?? null;
+
+        return is_int($lastCampaignId) && $lastCampaignId > 0 ? $lastCampaignId : null;
+    }
+
     protected function redirectIfAuthenticated(): void
     {
         $role = $this->getUserRole();

@@ -9,6 +9,7 @@ final class CharacterController extends AppController
     public function index(int $id): void
     {
         $this->forbidGuest();
+        $this->rememberLastDmCampaignId($id);
 
         $this->render('characters', [
             'pageTitle' => 'Karty postaci',
