@@ -17,8 +17,8 @@
         <p><?= htmlspecialchars((string) $campaign['description'], ENT_QUOTES, 'UTF-8') ?></p>
         <dl>
             <div>
-                <dt>Status</dt>
-                <dd><?= htmlspecialchars((string) $campaign['status'], ENT_QUOTES, 'UTF-8') ?></dd>
+                <dt>Last Played</dt>
+                <dd><?= htmlspecialchars((string) ($campaign['last_played_label'] ?? 'Not played yet'), ENT_QUOTES, 'UTF-8') ?></dd>
             </div>
             <div>
                 <dt>Mistrz Gry</dt>

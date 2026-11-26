@@ -16,14 +16,14 @@ final class CampaignRepository extends Repository
                 campaigns.name,
                 campaigns.description,
                 campaigns.room_code,
-                campaigns.status,
+                campaigns.last_played_at,
                 campaigns.created_at,
                 users.id AS dm_id,
                 users.username AS dm_username,
                 users.email AS dm_email
             FROM campaigns
             INNER JOIN users ON users.id = campaigns.dm_id
-            ORDER BY campaigns.created_at DESC, campaigns.id DESC',
+            ORDER BY campaigns.last_played_at DESC NULLS LAST, campaigns.id ASC',
         );
         $statement->execute();
 
@@ -38,7 +38,7 @@ final class CampaignRepository extends Repository
                 campaigns.name,
                 campaigns.description,
                 campaigns.room_code,
-                campaigns.status,
+                campaigns.last_played_at,
                 campaigns.created_at,
                 users.id AS dm_id,
                 users.username AS dm_username,

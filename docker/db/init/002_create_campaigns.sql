@@ -4,8 +4,7 @@ CREATE TABLE campaigns (
     name VARCHAR(120) NOT NULL,
     description TEXT NOT NULL DEFAULT '',
     room_code VARCHAR(16) NOT NULL UNIQUE,
-    status VARCHAR(20) NOT NULL DEFAULT 'active'
-        CHECK (status IN ('planned', 'active', 'archived')),
+    last_played_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
