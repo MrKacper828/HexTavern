@@ -1,7 +1,9 @@
 <?php
 $stylesheets = ['/css/characters.css'];
 
-$safeCampaignId = htmlspecialchars((string) ($campaignId ?? 1), ENT_QUOTES, 'UTF-8');
+$safeCampaignId = htmlspecialchars((string) ($campaign['id'] ?? $campaignId ?? 1), ENT_QUOTES, 'UTF-8');
+$safeCampaignName = htmlspecialchars((string) ($campaign['name'] ?? 'Unknown Campaign'), ENT_QUOTES, 'UTF-8');
+$characters = is_array($characters ?? null) ? $characters : [];
 
 ob_start();
 ?>
@@ -30,107 +32,75 @@ $navbarContent = ob_get_clean();
                 <h1 class="characters-title">Character Scrolls</h1>
                 <p class="characters-campaign-name">
                     <i class="fa-solid fa-dungeon" aria-hidden="true"></i>
-                    <span><?= htmlspecialchars((string) ($campaignName ?? 'Curse of the Sunken Citadel'), ENT_QUOTES, 'UTF-8') ?></span>
+                    <span><?= $safeCampaignName ?></span>
                 </p>
             </div>
         </header>
 
         <section class="characters-section" aria-labelledby="characters-list-heading">
             <h2 id="characters-list-heading" class="characters-section-title">
-                Character Scrolls (3)
+                Character Scrolls (<?= count($characters) ?>)
             </h2>
 
-            <ul class="characters-list">
-                <li class="character-card">
-                    <div class="character-identity">
-                        <div class="character-avatar character-avatar-placeholder" aria-hidden="true">
-                            <i class="fa-solid fa-user"></i>
+            <ul class="characters-list"<?= $characters === [] ? ' hidden' : '' ?>>
+                <?php foreach ($characters as $character): ?>
+                    <?php
+                    $characterId = htmlspecialchars((string) ($character['id'] ?? ''), ENT_QUOTES, 'UTF-8');
+                    $characterName = htmlspecialchars((string) ($character['name'] ?? 'Unnamed Character'), ENT_QUOTES, 'UTF-8');
+                    $rawAvatarPath = trim((string) ($character['avatar_path'] ?? ''));
+                    $avatarPath = htmlspecialchars($rawAvatarPath, ENT_QUOTES, 'UTF-8');
+                    ?>
+                    <li class="character-card">
+                        <div class="character-identity">
+                            <?php if ($rawAvatarPath !== ''): ?>
+                                <div class="character-avatar">
+                                    <img src="<?= $avatarPath ?>" alt="Portrait of <?= $characterName ?>">
+                                </div>
+                            <?php else: ?>
+                                <div class="character-avatar character-avatar-placeholder" aria-hidden="true">
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="character-info">
+                                <h3 class="character-name"><?= $characterName ?></h3>
+                            </div>
                         </div>
-                        <div class="character-info">
-                            <h3 class="character-name">Brokk Ironbreaker</h3>
+
+                        <div class="character-actions">
+                            <button
+                                type="button"
+                                class="open-scroll-btn"
+                                data-character-id="<?= $characterId ?>"
+                            >
+                                <i class="fa-solid fa-scroll" aria-hidden="true"></i>
+                                <span>Open Scroll</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                class="delete-scroll-btn"
+                                data-delete-trigger
+                                data-character-id="<?= $characterId ?>"
+                                data-character-name="<?= $characterName ?>"
+                                aria-label="Delete character <?= $characterName ?>"
+                                title="Delete character"
+                            >
+                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                                <span>Delete</span>
+                            </button>
                         </div>
-                    </div>
-
-                    <div class="character-actions">
-                        <button type="button" class="open-scroll-btn">
-                            <i class="fa-solid fa-scroll" aria-hidden="true"></i>
-                            <span>Open Scroll</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="delete-scroll-btn"
-                            data-delete-trigger
-                            data-character-name="Brokk Ironbreaker"
-                            aria-label="Delete character Brokk Ironbreaker"
-                            title="Delete character"
-                        >
-                            <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-                            <span>Delete</span>
-                        </button>
-                    </div>
-                </li>
-
-                <li class="character-card">
-                    <div class="character-identity">
-                        <div class="character-avatar character-avatar-placeholder" aria-hidden="true">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                        <div class="character-info">
-                            <h3 class="character-name">2nd placeholder</h3>
-                        </div>
-                    </div>
-
-                    <div class="character-actions">
-                        <button type="button" class="open-scroll-btn">
-                            <i class="fa-solid fa-scroll" aria-hidden="true"></i>
-                            <span>Open Scroll</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="delete-scroll-btn"
-                            data-delete-trigger
-                            data-character-name="2nd placeholder"
-                            aria-label="Delete character 2nd placeholder"
-                            title="Delete character"
-                        >
-                            <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-                            <span>Delete</span>
-                        </button>
-                    </div>
-                </li>
-
-                <li class="character-card">
-                    <div class="character-identity">
-                        <div class="character-avatar character-avatar-placeholder" aria-hidden="true">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                        <div class="character-info">
-                            <h3 class="character-name">3rd placeholder</h3>
-                        </div>
-                    </div>
-
-                    <div class="character-actions">
-                        <button type="button" class="open-scroll-btn">
-                            <i class="fa-solid fa-scroll" aria-hidden="true"></i>
-                            <span>Open Scroll</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="delete-scroll-btn"
-                            data-delete-trigger
-                            data-character-name="3rd placeholder"
-                            aria-label="Delete character 3rd placeholder"
-                            title="Delete character"
-                        >
-                            <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-                            <span>Delete</span>
-                        </button>
-                    </div>
-                </li>
+                    </li>
+                <?php endforeach; ?>
             </ul>
+
+            <div id="characters-empty" class="characters-empty"<?= $characters !== [] ? ' hidden' : '' ?>>
+                <i class="fa-solid fa-scroll" aria-hidden="true"></i>
+                <h3>No character scrolls yet</h3>
+                <p>Character sheets created for this campaign will appear here.</p>
+            </div>
+
+            <span id="characters-feedback" class="sr-only" aria-live="polite"></span>
         </section>
     </div>
 </main>

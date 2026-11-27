@@ -9,28 +9,43 @@
     }
 
     const listHeading = document.getElementById('characters-list-heading');
+    const charactersList = document.querySelector('.characters-list');
+    const emptyState = document.getElementById('characters-empty');
+    const feedback = document.getElementById('characters-feedback');
     const deleteTriggers = document.querySelectorAll('[data-delete-trigger]');
 
     let pendingCard = null;
+    let pendingCharacterId = null;
+    let pendingCharacterName = '';
     let lastTriggerButton = null;
 
     function updateCharacterCount() {
-        if (!listHeading) {
-            return;
+        const count = document.querySelectorAll('.characters-list .character-card').length;
+
+        if (listHeading) {
+            listHeading.textContent = `Character Scrolls (${count})`;
         }
 
-        const count = document.querySelectorAll('.characters-list .character-card').length;
-        listHeading.textContent = `Character Scrolls (${count})`;
+        if (charactersList) {
+            charactersList.hidden = count === 0;
+        }
+
+        if (emptyState) {
+            emptyState.hidden = count > 0;
+        }
     }
 
     function openDeleteModal(triggerButton) {
         pendingCard = triggerButton.closest('.character-card');
         lastTriggerButton = triggerButton;
 
-        const rawName = triggerButton.getAttribute('data-character-name');
-        const characterName = rawName && rawName.trim() !== '' ? rawName.trim() : 'this character';
+        const rawId = triggerButton.getAttribute('data-character-id');
+        pendingCharacterId = rawId && rawId.trim() !== '' ? rawId.trim() : null;
 
-        modalCharacterName.textContent = characterName;
+        const rawName = triggerButton.getAttribute('data-character-name');
+        pendingCharacterName = rawName && rawName.trim() !== '' ? rawName.trim() : 'this character';
+
+        modalCharacterName.textContent = pendingCharacterName;
         modal.showModal();
     }
 
@@ -40,15 +55,27 @@
         }
     }
 
+    function clearPendingState() {
+        pendingCard = null;
+        pendingCharacterId = null;
+        pendingCharacterName = '';
+    }
+
     function handleConfirmDelete() {
+        const removedName = pendingCharacterName;
+
         if (pendingCard) {
             pendingCard.remove();
         }
 
-        pendingCard = null;
+        clearPendingState();
         lastTriggerButton = null;
         updateCharacterCount();
         closeDeleteModal();
+
+        if (feedback && removedName !== '') {
+            feedback.textContent = `Removed character scroll: ${removedName}.`;
+        }
     }
 
     deleteTriggers.forEach((button) => {
@@ -67,7 +94,7 @@
     });
 
     modal.addEventListener('close', () => {
-        pendingCard = null;
+        clearPendingState();
 
         if (lastTriggerButton && lastTriggerButton.isConnected) {
             lastTriggerButton.focus();
