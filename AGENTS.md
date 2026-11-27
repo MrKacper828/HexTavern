@@ -47,11 +47,15 @@ Aktualnie aplikacja obsługuje:
 │   └── php/                        # obraz PHP-FPM i rozszerzenia PHP
 ├── public/                         # jedyny publicznie dostępny katalog (document root)
 │   ├── css/
-│   │   ├── style.css               # globalne style, zmienne motywów (dark/light), navbar, dropdown
+│   │   ├── style.css               # globalne style, zmienne motywów (dark/light), navbar, dropdown, .sr-only
 │   │   ├── home.css                # style strony głównej
-│   │   └── login.css               # dedykowane style widoków auth/join i kart
+│   │   ├── login.css               # dedykowane style widoków auth/join i kart
+│   │   ├── campaigns.css           # style menedżera kampanii (dark/light, RWD)
+│   │   └── characters.css          # style widoku kart postaci DM-a i modala (dark/light, RWD)
 │   ├── js/
-│   │   └── theme.js                # przełącznik motywu jasny/ciemny (localStorage)
+│   │   ├── theme.js                # przełącznik motywu jasny/ciemny (localStorage)
+│   │   ├── campaigns.js            # kopiowanie kodu pokoju do schowka
+│   │   └── characters.js           # obsługa okna potwierdzenia usunięcia karty postaci
 │   ├── index.php                   # Front Controller i rejestracja tras
 │   └── views/                      # szablony widoków renderowane przez kontrolery
 │       ├── layout.html.php         # bazowy układ ($content, $stylesheets, $navbarContent, navbar i menu użytkownika)
@@ -73,7 +77,8 @@ Aktualnie aplikacja obsługuje:
 │   │   ├── CampaignController.php
 │   │   └── CharacterController.php
 │   ├── Repository/                 # repozytoria dostępu do bazy (namespace App\Repository)
-│   │   └── Repository.php          # abstrakcyjna klasa bazowa z wstrzykiwanym PDO
+│   │   ├── Repository.php          # abstrakcyjna klasa bazowa z wstrzykiwanym PDO
+│   │   └── CampaignRepository.php  # pobieranie kampanii wraz z danymi DM-a
 │   ├── Database.php                # singleton połączenia PDO z PostgreSQL (App\Database)
 │   └── Routing.php                 # autorski router aplikacji
 ├── .env.example                    # bezpieczny szablon zmiennych środowiskowych
@@ -126,7 +131,7 @@ Kontrolery znajdują się w `src/controllers/`, używają przestrzeni nazw `App\
 - przygotowanie danych dla widoku,
 - wybranie szablonu przez `$this->render(string $template, array $variables = [])` albo przekierowanie po sukcesie żądania `POST` metodą `$this->redirect(string $path): never` (kod `303 See Other`, wzorzec PRG).
 
-Trasy formularzy są rozdzielane na akcję `GET` (wyświetlenie) oraz `POST` z sufiksem `*Post()` (walidacja i przekierowanie). Na obecnym etapie (przed podpięciem bazy PostgreSQL i repozytoriów) walidacja formularzy logowania, rejestracji, resetu hasła i dołączania ma charakter tymczasowy. Kontroler powinien być cienki — nie umieszczaj w nim rozbudowanych zapytań SQL, kodu HTML ani reguł CSS.
+Trasy formularzy są rozdzielane na akcję `GET` (wyświetlenie) oraz `POST` z sufiksem `*Post()` (walidacja i przekierowanie). Walidacja formularzy logowania, rejestracji, resetu hasła i dołączania ma na razie charakter tymczasowy, natomiast `CampaignController` i `CharacterController` pobierają już dane kampanii z PostgreSQL przez `CampaignRepository` i zwracają `404` (`not-found`) dla nieistniejącego ID kampanii. Kontroler powinien być cienki — nie umieszczaj w nim rozbudowanych zapytań SQL, kodu HTML ani reguł CSS.
 
 ### Sesje, role i ochrona tras
 
@@ -137,10 +142,11 @@ Trasy formularzy są rozdzielane na akcję `GET` (wyświetlenie) oraz `POST` z s
 
 Metoda `AppController::render()` automatycznie przekazuje do wszystkich widoków zmienne globalne `$isLoggedIn`, `$userRole`, `$userName` oraz `$guestCampaignId` (wykorzystywane m.in. w pasku górnym i rozwijanym menu w `layout.html.php`).
 
-Ochrona tras opiera się na metodach pomocniczych w `AppController`:
+Ochrona tras i nawigacja sesyjna opierają się na metodach pomocniczych w `AppController`:
 
 - `redirectIfAuthenticated()` — blokuje dostęp do tras auth (`/login`, `/register`, `/forgot-password`, `/reset-password` w `GET` i `POST`) oraz `/campaigns/join` dla użytkowników z aktywną sesją (`dm` → `/campaigns`, `guest` → `/campaigns/{campaign_id}`),
 - `forbidGuest()` — blokuje rolę `'guest'` na panelach DM-a (`/campaigns` oraz `/campaigns/{id}/characters`),
+- `rememberLastDmCampaignId()` / `getLastDmCampaignId()` — zapamiętują ostatnio odwiedzoną kampanię DM-a w sesji na potrzeby zakładek `Game / Table` i `Characters / Scrolls`,
 - w `CampaignController::show()` gość może wejść wyłącznie do pokoju o ID zgodnym z `getGuestCampaignId()`.
 
 ### Model
@@ -252,6 +258,18 @@ W projekcie nie ma obecnie skonfigurowanego zestawu testów automatycznych. Po k
 - Nie wykonuj destrukcyjnych poleceń bez potwierdzenia.
 - Nie zmieniaj wygenerowanych plików w `vendor/`.
 - Wszystkie dane wyjściowe renderowane w szablonach HTML zabezpieczaj za pomocą `htmlspecialchars()`.
+
+## Workflow współpracy i Git
+
+- **Plan przed kodem:** przy każdym nowym zadaniu najpierw przedstaw dokładny plan zmian (baza danych, kontrolery, widoki, CSS/JS) oraz proponowany podział na małe, nienakładające się commity — nie modyfikuj plików przed zatwierdzeniem planu przez użytkownika.
+- **Git po stronie użytkownika:** agent nie wykonuje `git add`, `git commit`, `git branch` ani `git checkout`. Po zakończeniu prac podsumowuje zmodyfikowane pliki, wypisuje gotowe komendy `git add` + `git commit` oraz instrukcję lokalnego testowania.
+- **Konwencja nazw commitów:** używaj wyłącznie prefiksów `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:` — **bez** scopów w nawiasach (np. bez `feat(campaigns):`) i **bez** prefiksu `style:`.
+- **Ustalenia UI i implementacji:**
+  - nie modyfikuj stopki w `public/views/layout.html.php`,
+  - środkową nawigację przekazuj z widoków przez `$navbarContent`,
+  - etykiety interfejsu na obecnym etapie pisz po angielsku (pełne tłumaczenia PL/EN powstaną w osobnym etapie),
+  - w CSS używaj wyłącznie jednostek względnych (zero `px`), wspieraj oba motywy (ciemny oraz `[data-theme="light"]`) i nie dodawaj stylów inline w HTML.
+- **Weryfikacja i Docker:** sprawdzaj składnię przez `php -l` na zmienionych plikach PHP, `node --check` na zmodyfikowanych plikach JS oraz `composer dump-autoload` przy zmianach klas; nie uruchamiaj destrukcyjnych poleceń Dockera (np. `docker compose down -v`) bez zgody użytkownika.
 
 ## Zasady dla agentów AI
 

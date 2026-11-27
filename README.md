@@ -1,6 +1,6 @@
 # HexTavern
 
-Strona oferuje darmowe tworzenie lobby do sesji online w gry TTRPG (Tabletop Role-Playing Game). Pozwala na posiadanie lobby gdzie widoczne są rzuty kości wszystkich graczy i dm-a (Dungeon Master), gracze mogą również zobaczyć podstawowe statystyki swoich kompanów, a dm ma możliwość pełnego wglądu w karty postaci bądź swoje notatki. 
+Strona oferuje darmowe tworzenie lobby do sesji online w gry TTRPG (Tabletop Role-Playing Game). Pozwala na posiadanie lobby gdzie widoczne są rzuty kości wszystkich graczy i dm-a (Dungeon Master), gracze mogą również zobaczyć podstawowe statystyki swoich kompanów, a dm ma możliwość pełnego wglądu w karty postaci bądź swoje notatki.
 
 ## Funkcje
 
@@ -10,9 +10,9 @@ Strona oferuje darmowe tworzenie lobby do sesji online w gry TTRPG (Tabletop Rol
 | Dołączanie do lobby | Gracze dołączają kodem pokoju i nickiem bez zakładania konta. |
 | Konto DM-a | Logowanie, rejestracja i odzyskiwanie hasła Mistrza Gry. |
 | Sesja i interfejs | Rozróżnienie ról (DM / Gość) w menu użytkownika oraz przełącznik motywu (ciemny / jasny). |
-| Lista kampanii DM-a | Zarządzanie prowadzonymi kampaniami. |
+| Lista kampanii DM-a | Pobieranie kampanii z PostgreSQL, data ostatniej rozgrywki i kopiowanie kodu pokoju. |
 | Stół do rozgrywki | Widok sesji, rzuty kośćmi i podgląd kart postaci. |
-| Karty postaci (DM) | Pełny wgląd DM-a w karty postaci graczy oraz karty customowe. |
+| Karty postaci (DM) | Lista kart przypisanych do wybranej kampanii dla DM-a. |
 
 ## Tech stack
 
@@ -23,6 +23,14 @@ Strona oferuje darmowe tworzenie lobby do sesji online w gry TTRPG (Tabletop Rol
 | Serwer HTTP | Nginx |
 | Baza danych | PostgreSQL 16, PDO |
 | Konteneryzacja i narzędzia | Docker Compose (Mailpit, pgAdmin) |
+
+## Architektura
+
+Aplikacja korzysta z lekkiego, autorskiego modelu MVC bez zewnętrznego frameworka PHP — logika żądań jest rozdzielona między router, cienkie kontrolery, warstwę repozytoriów PDO oraz szablony widoków w `public/views/`:
+
+```text
+Przeglądarka -> Nginx -> public/index.php -> Routing -> Controller -> Repository / PostgreSQL -> View
+```
 
 ## Szybki start
 
@@ -58,49 +66,11 @@ Adresy lokalne (domyślne porty):
 - Mailpit: http://localhost:8025
 - pgAdmin: http://localhost:5050
 
-## Inicjalizacja bazy danych
+## Baza danych
 
-Compose montuje katalog `docker/db/init/` w trybie tylko do odczytu jako
-`/docker-entrypoint-initdb.d` w kontenerze PostgreSQL. Oficjalny entrypoint
-wykonuje pliki `*.sql` w kolejności alfabetycznej, ale wyłącznie wtedy, gdy
-wolumen danych `pg-data` jest pusty (podczas pierwszej inicjalizacji).
-
-Startowe skrypty inicjalizacyjne:
-
-1. `001_create_users.sql` tworzy tabelę `users`.
-2. `002_create_campaigns.sql` tworzy tabelę `campaigns`, klucz obcy `dm_id -> users(id)` oraz indeks `idx_campaigns_dm_id`.
-3. `003_seed_demo.sql` dodaje przykładowe konta DM i demonstracyjne kampanie.
-
-Dodanie kolejnego pliku do katalogu nie uruchomi go automatycznie na istniejącej
-bazie. W środowisku lokalnym/demonstracyjnym można odtworzyć bazę od zera:
-
-```bash
-docker compose down -v
-docker compose up --build -d
-```
-
-> Polecenie `docker compose down -v` usuwa wszystkie dane z wolumenu `pg-data`, dlatego służy wyłącznie do resetu środowiska lokalnego, a nie do migracji produkcyjnych.
-
-PostgreSQL zamienia niecytowane identyfikatory na małe litery, dlatego projekt używa
-standardowych nazw pisanych małymi literami (`users`, `campaigns`).
-
-## Połączenie z bazą
-
-`src/Database.php` (`App\Database`) jest Singletonem: prywatny konstruktor blokuje
-`new Database()`, a `Database::getInstance()->getConnection()` udostępnia jedno
-współdzielone połączenie PDO na żądanie PHP. Konfiguracja połączenia odczytywana
-jest ze zmiennych środowiskowych kontenera (`DB_HOST`, `DB_PORT`, `DB_NAME`,
-`DB_USER`, `DB_PASSWORD`).
-
-Bazowa klasa `src/Repository/Repository.php` (`App\Repository\Repository`)
-przechowuje `protected PDO $connection` i pozwala opcjonalnie przekazać obiekt
-`PDO` w konstruktorze, co ułatwia izolowanie testów jednostkowych.
-
-Aby podejrzeć bazę w pgAdminie (`http://localhost:5050`), dodaj nowy serwer
-z parametrami:
-- **Host name/address:** `db`
-- **Port:** `5432`
-- **Maintenance database / Username / Password:** wartości `POSTGRES_DB`, `POSTGRES_USER` i `POSTGRES_PASSWORD` z pliku `.env`.
+- **Inicjalizacja:** skrypty startowe w `docker/db/init/` (`001_create_users.sql`, `002_create_campaigns.sql`, `003_seed_demo.sql`) wykonują się automatycznie przy pierwszym starcie, gdy wolumen `pg-data` jest pusty. Lokalny reset bazy od zera (uwaga: usuwa dane wolumenu): `docker compose down -v && docker compose up --build -d`.
+- **Połączenie w PHP:** singleton `src/Database.php` (`App\Database`) udostępnia współdzielone połączenie PDO konfigurowane przez zmienne środowiskowe z `.env`, a bazowa klasa `src/Repository/Repository.php` przyjmuje opcjonalne `PDO` w konstruktorze.
+- **Podgląd w pgAdmin:** `http://localhost:5050` — serwer z hostem `db`, portem `5432` oraz danymi `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` z `.env`.
 
 ## Struktura projektu
 
